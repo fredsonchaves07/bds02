@@ -3,7 +3,11 @@ package com.devsuperior.bds02.services;
 import com.devsuperior.bds02.dto.CityDTO;
 import com.devsuperior.bds02.entities.City;
 import com.devsuperior.bds02.repositories.CityRepository;
+import com.devsuperior.bds02.services.exceptions.DatabaseException;
+import com.devsuperior.bds02.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,5 +32,16 @@ public class CityService {
     @Transactional
     public CityDTO insert(CityDTO cityDTO) {
         return new CityDTO(cityRepository.save(new City(cityDTO.getId(), cityDTO.getName())));
+    }
+
+    public void delete(Long id) {
+        try {
+            cityRepository.deleteById(id);
+        } catch (EmptyResultDataAccessException exception) {
+            throw new ResourceNotFoundException("City not found");
+        } catch (DataIntegrityViolationException exception) {
+            throw new DatabaseException("Integrity violation");
+        }
+
     }
 }
